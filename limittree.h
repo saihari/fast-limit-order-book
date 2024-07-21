@@ -22,7 +22,7 @@ struct LimitNode
     }
 
     LimitNode *parent_, *left_, *right_;
-    int color_;
+    int balance_;
     // data members
     Price limit_;
     Volume volume_;
@@ -34,26 +34,29 @@ struct LimitNode
     Volume get_volume() const;
 };
 
-// Node Traits for Limit Red Black Tree
+// Node Traits for Limit AVL Tree
 struct LimitNodeTraits
 {
     typedef LimitNode node;
     typedef LimitNode *node_ptr;
     typedef const LimitNode *const_node_ptr;
-    typedef int color;
+    typedef int balance;
     static node_ptr get_parent(const_node_ptr n) { return n->parent_; }
     static void set_parent(node_ptr n, node_ptr parent) { n->parent_ = parent; }
     static node_ptr get_left(const_node_ptr n) { return n->left_; }
     static void set_left(node_ptr n, node_ptr left) { n->left_ = left; }
     static node_ptr get_right(const_node_ptr n) { return n->right_; }
     static void set_right(node_ptr n, node_ptr right) { n->right_ = right; }
-    static color get_color(const_node_ptr n) { return n->color_; }
-    static void set_color(node_ptr n, color c) { n->color_ = c; }
-    static color black() { return color(0); }
-    static color red() { return color(1); }
+
+    static balance get_balance(const_node_ptr n) { return n->balance_; }
+    static void set_balance(node_ptr n, balance c) { n->balance_ = c; }
+
+    static balance negative() { return -1; }
+    static balance zero() { return 0; }
+    static balance positive() { return 1; }
 };
 
-// Node Value Traits for Limit Red Black Tree
+// Node Value Traits for Limit AVL Tree
 struct LimitValueTraits
 {
     typedef LimitNodeTraits node_traits;
@@ -71,7 +74,7 @@ struct LimitValueTraits
     static const_pointer to_value_ptr(const_node_ptr n) { return n; }
 };
 
-using LimitTree = boost::intrusive::rbtree<LimitNode, boost::intrusive::value_traits<LimitValueTraits>>;
+using LimitTree = boost::intrusive::avltree<LimitNode, boost::intrusive::value_traits<LimitValueTraits>>;
 
 class OrderBook
 {
