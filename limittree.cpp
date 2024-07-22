@@ -33,33 +33,63 @@ void OrderBook::insert_limit(Price limit_price)
     SellTree.insert_equal(*sell_node);
 };
 
-std::string OrderBook::order(Side side, Price price, Quantity qty)
+TransactionList OrderBook::execute_order(Order *order)
+{
+    Price best_price;
+    Quantity remaining_qty = order->qty;
+    TransactionList t_list{};
+
+    if (order->side == Side::BUY)
+    {
+        best_price = LowestSell;
+    }
+    else if (order->side == Side::SELL)
+    {
+        best_price = HighestBuy;
+    }
+
+    // Matching Loop
+    // while (remaining_qty >= 0)
+    // {
+    // }
+
+    return t_list;
+};
+
+TransactionList OrderBook::order(Side side, Price price, Quantity qty)
 {
     // To insert an order in the order book
     Order *new_order = new Order(side, qty, price);
     std::string new_order_id = new_order->get_order_id();
     OrderMap[new_order_id] = new_order;
 
-    if ((new_order->side == Side::BUY) && (new_order->qty > 0) && (LowestSell != NULL))
+    if ((new_order->side == Side::BUY) && (new_order->qty > 0) && (LowestSell != NULL) && (SellTree.size() != 0))
     {
         std::cout << "Executing Buy Trade" << std::endl;
-        Log.log("Buy order executed");
-        return "";
+        ApplicationLogger.log("Buy order executed");
+
+        TransactionList t_list = execute_order(new_order);
+
+        return t_list;
     }
-    else if ((new_order->side == Side::SELL) && (new_order->qty > 0) && (HighestBuy != NULL))
+    else if ((new_order->side == Side::SELL) && (new_order->qty > 0) && (HighestBuy != NULL) && (BuyTree.size() != 0))
     {
         std::cout << "Executing Sell Trade" << std::endl;
-        Log.log("Sell order executed");
-        return "";
+        ApplicationLogger.log("Sell order executed");
+
+        TransactionList t_list = execute_order(new_order);
+
+        return t_list;
     }
     else
     {
-        return insert_order(new_order);
+        TransactionList t_list = {insert_order(new_order)};
+        return t_list;
     }
 };
 
 // std::string OrderBook::insert_order(Side side, Price price, Quantity qty)
-std::string OrderBook::insert_order(Order *new_order)
+Transaction OrderBook::insert_order(Order *new_order)
 {
     // To insert an order in the order book
     // Order *new_order = new Order(side, qty, price);
@@ -111,7 +141,11 @@ std::string OrderBook::insert_order(Order *new_order)
         }
     };
 
-    return new_order->order_id;
+    // Creating the Log and Transaction Object
+    ApplicationLogger.log("Order Id: " + new_order->order_id);
+    Transaction t = Transaction(TransactionType::ORDER, new_order->order_id, "");
+
+    return t;
 };
 
 bool OrderBook::cancel_order(std::string order_id)

@@ -86,16 +86,17 @@ private:
     std::unordered_map<std::string, Order *> OrderMap;
     Price HighestBuy = NULL;
     Price LowestSell = NULL;
-    Logger Log;
+    Logger ApplicationLogger;
 
 public:
     OrderBook(){};
     void insert_limit(Price limit_price);
     // std::string insert_order(Side side, Price price, Quantity qty);
-    std::string insert_order(Order *new_order);
+    Transaction insert_order(Order *new_order);
     void print_volume(Side side);
     bool cancel_order(std::string order_id);
-    std::string order(Side side, Price price, Quantity qty);
+    TransactionList order(Side side, Price price, Quantity qty);
+    TransactionList execute_order(Order *order);
 };
 
 #endif
