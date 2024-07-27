@@ -28,20 +28,21 @@ struct Transaction
                 std::string order_id,
                 std::string transaction_id) : transaction_type_(transaction_type),
                                               order_id_(order_id),
-                                              transaction_id_(transaction_id)
+                                              opposite_order_id_(transaction_id)
     {
     }
 
     // Members
     TransactionType transaction_type_;
-    std::string order_id_;
-    std::string transaction_id_;
+    std::string order_id_;          // denotes order id of the order
+    std::string opposite_order_id_; // denotes the order id with which the order was traded
 };
 
 // Aliases
 using Price = float;
 using Quantity = uint32_t;
 using OrderId = boost::uuids::uuid;
+using TransactionId = boost::uuids::uuid;
 using Volume = uint32_t;
 using TransactionList = std::list<Transaction>;
 

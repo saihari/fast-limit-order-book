@@ -9,6 +9,8 @@ inline OrderId gen_order_id() { return boost::uuids::random_generator()(); };
 inline std::string uuid_to_string(const boost::uuids::uuid &uuid) { return boost::uuids::to_string(uuid); };
 
 // Order Constructor
+Order::Order(){}; // Default Constructor
+
 Order::Order(const Side side, const Quantity qty, const Price price) : side(side), qty(qty), price(price)
 {
     order_id = uuid_to_string(gen_order_id());

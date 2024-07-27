@@ -84,8 +84,8 @@ private:
     std::unordered_map<Price, LimitNode *> BuyLimitMap;
     std::unordered_map<Price, LimitNode *> SellLimitMap;
     std::unordered_map<std::string, Order *> OrderMap;
-    Price HighestBuy = NULL;
-    Price LowestSell = NULL;
+    Price HighestBuy = 0;
+    Price LowestSell = 0;
     Logger ApplicationLogger;
 
 public:
@@ -97,6 +97,8 @@ public:
     bool cancel_order(std::string order_id);
     TransactionList order(Side side, Price price, Quantity qty);
     TransactionList execute_order(Order *order);
+    Quantity get_quantity(Price limit_price, Side side);
+    Price get_best_price(Side side, Price price);
 };
 
 #endif
