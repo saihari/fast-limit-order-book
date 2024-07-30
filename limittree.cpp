@@ -35,8 +35,12 @@ void OrderBook::insert_limit(Price limit_price)
 
 Quantity OrderBook::get_quantity(Price limit_price, Side side)
 {
+
+    if (limit_price == 0) // This happens when there is no best price to fill the order
+        return 0;
+
     if (side == Side::BUY)
-        return BuyLimitMap[limit_price]->volume_;
+        return SellLimitMap[limit_price]->volume_;
     else if (side == Side::SELL)
         return BuyLimitMap[limit_price]->volume_;
 
@@ -60,7 +64,6 @@ Price OrderBook::get_best_price(Side side, Price price)
 
         while (true)
         {
-            std::cout << "in the getbestpricefunc: " << nextIt->limit_;
             if (nextIt->volume_ != 0)
             {
                 return nextIt->limit_;
@@ -78,10 +81,10 @@ Price OrderBook::get_best_price(Side side, Price price)
     else if (side == Side::BUY)
     {
         // Iterator to the lowestValue node
-        LimitTree::iterator lowest_value_it = BuyTree.iterator_to(*SellLimitMap[LowestSell]);
+        LimitTree::iterator lowest_value_it = SellTree.iterator_to(*SellLimitMap[LowestSell]);
 
         // If the lowest value is at the end of the tree
-        if (lowest_value_it == BuyTree.end())
+        if (lowest_value_it == SellTree.end())
             return 0;
 
         // Iterate forwards until we find a node with volume not equal to zero
@@ -96,7 +99,7 @@ Price OrderBook::get_best_price(Side side, Price price)
                 return nextIt->limit_;
             }
 
-            if ((nextIt == BuyTree.end()) || (price < nextIt->limit_))
+            if ((nextIt == SellTree.end()) || (price < nextIt->limit_))
                 break;
 
             ++nextIt;
@@ -132,6 +135,7 @@ TransactionList OrderBook::execute_order(Order *order)
         {
             // get next best price where qty is available
             best_price = get_best_price(order->side, order->price);
+            std::cout << "\nbest_price: " << best_price << std::endl;
             availabe_qty = get_quantity(best_price, order->side);
 
             if (order->side == Side::BUY)
@@ -146,7 +150,6 @@ TransactionList OrderBook::execute_order(Order *order)
         // Step 2: Update order book (aka making the trade)
         // Get order from orders list of Limit node for respective price
         Order existing_order;
-
         if (order->side == Side::BUY)
             existing_order = SellLimitMap[best_price]->order_list_.front();
         else if (order->side == Side::SELL)
@@ -176,16 +179,17 @@ TransactionList OrderBook::execute_order(Order *order)
         else if ((order->side == Side::SELL) & (existing_order.qty != 0))
             BuyLimitMap[best_price]->volume_ -= min_qty;
 
+        // std::cout << "best_price: " << best_price << "\navailable qty: " << availabe_qty << "\nmin qty: " << min_qty << "\nremaining_qty: " << remaining_qty << std::endl;
         //  Record trade
         // Creating the Log and Transaction Object
         ApplicationLogger.log("Trade \tOrder Id: " + order->order_id + "\tOpposite Order Id: " + existing_order.order_id);
         Transaction t = Transaction(TransactionType::TRADE, order->order_id, existing_order.order_id);
         t_list.emplace_back(t);
-    };
-
+    }
+    std::cout << "\nremaining_qty: " << remaining_qty << std::endl;
     if (remaining_qty > 0)
     {
-        //  Update order aty (case of partial fill)
+        //  Update order qty (case of partial fill)
         order->qty = remaining_qty;
         t_list.emplace_back(insert_order(order));
     }
@@ -306,8 +310,20 @@ bool OrderBook::cancel_order(std::string order_id)
 
         return true;
     }
-    else
+    else if (order->side == Side::SELL)
     {
+        OrderList::iterator it = SellLimitMap[order->price]->order_list_.iterator_to(*order);
+        SellLimitMap[order->price]->volume_ -= order->qty;
+        SellLimitMap[order->price]->order_list_.erase(it);
+
+        OrderMap.erase(order_id);
+        if (OrderMap.find(order_id) != OrderMap.end())
+        {
+            std::cout << "remove unsuccessful" << "\n";
+        };
+
+        delete order;
+
         return true;
     }
     return false;
@@ -317,6 +333,7 @@ void OrderBook::print_volume(Side side)
 {
     if (side == Side::BUY)
     {
+        std::cout << "Buy Side:\n";
         for (LimitTree::iterator obj = BuyTree.begin(); obj != BuyTree.end(); ++obj)
         {
             std::cout << "\tLimit: " << obj->limit_ << "\tvolume: " << obj->volume_ << "\n";
@@ -329,6 +346,7 @@ void OrderBook::print_volume(Side side)
     }
     else if (side == Side::SELL)
     {
+        std::cout << "Sell Side:\n";
         for (LimitTree::iterator obj = SellTree.begin(); obj != SellTree.end(); ++obj)
         {
             std::cout << "\tLimit: " << obj->limit_ << "\tvolume: " << obj->volume_ << "\n";

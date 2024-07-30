@@ -17,6 +17,11 @@ int main()
     // ob.order(Side::BUY, 15.00, 40);
     // ob.order(Side::BUY, 25.00, 20);
 
+    ob.order(Side::SELL, 25.0, 50);
+    std::cout << "\nSell Order Placed" << "\n\n\n\n";
+    ob.print_volume(Side::SELL);
+    std::cout << "\n\n\n\n";
+
     TransactionList t_list = ob.order(Side::BUY, 25.00, 500);
 
     // auto it = std::next(t_list.begin(), 0); // Advance iterator to index
@@ -33,12 +38,11 @@ int main()
     ob.print_volume(Side::BUY);
     std::cout << "\nBuy Order Placed" << "\n\n\n\n";
 
-    ob.order(Side::SELL, 25.0, 50);
-    std::cout << "\nSell Order Placed" << "\n\n\n\n";
+    std::cout << "\n\n\n\n OrderBook \n\n\n\n";
+
+    ob.print_volume(Side::BUY);
 
     ob.print_volume(Side::SELL);
-    std::cout << "\n\n\n\n";
-    ob.print_volume(Side::BUY);
     // ob.print_volume(Side::BUY);
     // ob.print_volume(Side::SELL);
     // ob.cancel_order(order_id1);
