@@ -1,5 +1,5 @@
-#ifndef LIMITTREE_H
-#define LIMITTREE_H
+#ifndef ORDERBOOK_H
+#define ORDERBOOK_H
 
 #include "datatypes.h"
 #include "order.h"
