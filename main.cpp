@@ -1,6 +1,8 @@
 #include <iostream>
-#include "src/orderbook.h"
-#include "src/datatypes.h"
+#include "matching_engine/orderbook.h"
+#include "matching_engine/datatypes.h"
+
+using namespace matching_engine;
 
 int main()
 {
