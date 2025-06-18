@@ -8,6 +8,7 @@
 #include <boost/intrusive/link_mode.hpp>
 #include <boost/intrusive/rbtree.hpp>
 #include <boost/intrusive/avltree.hpp>
+#include <gtest/gtest_prod.h>
 
 namespace matching_engine
 {
@@ -81,6 +82,10 @@ namespace matching_engine
     class OrderBook
     {
     private:
+        // For running tests  on private variables
+        friend class OrderBookTest;
+        // FRIEND_TEST(OrderBookTest, InsertNegativeLimit);
+
         LimitTree BuyTree;
         LimitTree SellTree;
         std::unordered_map<Price, LimitNode *> BuyLimitMap;
@@ -90,11 +95,13 @@ namespace matching_engine
         Price LowestSell = 0;
         logger::Logger ApplicationLogger;
 
+        // Non-public Functions
+        void insert_limit(Price limit_price);
+        Transaction insert_order(Order *new_order);
+
     public:
         OrderBook() {};
-        void insert_limit(Price limit_price);
-        // std::string insert_order(Side side, Price price, Quantity qty);
-        Transaction insert_order(Order *new_order);
+
         void print_volume(Side side);
         bool cancel_order(std::string order_id);
         TransactionList order(Side side, Price price, Quantity qty);

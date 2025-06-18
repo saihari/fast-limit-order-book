@@ -26,6 +26,10 @@ namespace matching_engine
     // Order book Function Implementation
     void OrderBook::insert_limit(Price limit_price)
     {
+
+        if (limit_price <= 0.0)
+            return;
+
         LimitNode *buy_node = new LimitNode(limit_price);
         LimitNode *sell_node = new LimitNode(limit_price);
 
@@ -236,6 +240,17 @@ namespace matching_engine
     {
         // To insert an order in the order book
 
+        // Rejecting any order with invalid limit or invalid quantity or invalid Side
+        if ((new_order->price <= 0) || (new_order->qty <= 0) || ((new_order->side != Side::BUY) && (new_order->side != Side::SELL)))
+        {
+            ApplicationLogger.log("Order Id: " + new_order->order_id + " is invalid");
+            ApplicationLogger.log("Order Id: " + new_order->order_id +
+                                  "\tSide:  " + SideStrings[new_order->side] +
+                                  "\tLimit: " + std::to_string(new_order->price) +
+                                  "\tQty: " + std::to_string(new_order->qty));
+            return Transaction(TransactionType::NONE, "", "");
+        };
+
         if (new_order->side == Side::BUY)
         {
             // Check if limit is present else insert it
@@ -292,6 +307,7 @@ namespace matching_engine
     {
         if (OrderMap.find(order_id) == OrderMap.end())
         {
+            ApplicationLogger.log("Order Id: " + order_id + "doesn't exist.");
             return true;
         }
 
